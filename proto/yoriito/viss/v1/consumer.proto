@@ -1,0 +1,129 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// Copyright 2026 JASPAR
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+/**
+ * VISSv3.0 Protocol Buffers Definition
+ */
+
+syntax = "proto3";
+package yoriito.viss.v1.consumer;
+
+/* external proto */
+import "google/protobuf/empty.proto";
+
+/* internal proto */
+import "yoriito/viss/v1/types/error.proto";
+import "yoriito/viss/v1/types/filter.proto";
+import "yoriito/viss/v1/types/value.proto";
+import "yoriito/viss/v1/common.proto";
+
+// gRPC Service Definition
+service VISS {
+  // action to get current sensor data
+  rpc GetCurrent(GetCurrentRequest) returns (GetCurrentResponse);
+  // action to get metadata of a node
+  rpc Inspect(InspectRequest) returns (InspectResponse);
+  // action to set target value to actuator
+  rpc SetTarget(SetTargetRequest) returns (SetTargetResponse);
+  // action to subscribe current sensor data
+  rpc SubscribeCurrent(SubscribeCurrentRequest) returns (stream SubscribeCurrentResponse);
+  // action to unsubscribe current sensor data
+  rpc Unsubscribe(UnsubscribeRequest) returns (UnsubscribeResponse);
+}
+
+/**********************************************************
+ * Get
+ **********************************************************/
+
+// GetCurrentRequest represents a request to get current sensor data
+message GetCurrentRequest {
+  // The path of the node to get data from
+  string path = 1;
+  // Optional filter to apply to the data retrieval
+  optional GetFilter filter = 2;
+}
+
+// GetCurrentResponse represents the response to a GetCurrentRequest
+message GetCurrentResponse {
+  // Timestamp of the server response
+  int64 ts = 1;
+
+  // result can be either data or an error
+  oneof result {
+    // data contains the current sensor data
+    DataPackagesCurrent data = 11;
+    // error contains any error that occurred on the server
+    Error error = 12;
+  }
+}
+
+/**********************************************************
+ * Set
+ **********************************************************/
+
+// SetTargetRequest represents a request to set target values for actuators
+message SetTargetRequest {
+  // The target data to set for the actuators
+  DataPackagesTarget data = 1;
+}
+
+message SetTargetResponse {
+  // Timestamp of the server response
+  int64 ts = 1;
+
+  // result can be either success or an error
+  oneof result {
+    // success indicates the target values were accepted by the server
+    google.protobuf.Empty success = 11;
+    // error contains any error that occurred on the server
+    Error error = 12;
+  }
+}
+
+/**********************************************************
+ * Subscribe/Subscription
+ **********************************************************/
+
+// SubscribeCurrentRequest represents a request to subscribe to current sensor data
+message SubscribeCurrentRequest {
+  // The path of the node to subscribe to
+  string path = 1;
+  // Optional filter to apply to the subscription
+  SubscribeFilter filter = 2;
+}
+
+// SubscribeCurrentResponse represents the response to a SubscribeCurrentRequest
+message SubscribeCurrentResponse {
+  // Timestamp of the server response
+  int64 ts = 1;
+  // SubscribeCurrentResponse can contain either a success, an error, or an event
+  oneof message_type {
+    // success indicates the subscription was successful
+    SubscribeSuccess success = 10;
+    // error contains any error that occurred on the server
+    SubscribeError error = 20;
+    // event contains data updates for the subscription
+    SubscriptionCurrentEvent event = 30;
+  }
+}
+
+// SubscriptionEvent represents an event in a subscription
+message SubscriptionCurrentEvent {
+  // The ID of the subscription that this event belongs to
+  string subscription_id = 31;
+  // The current data for the subscription
+  DataPackagesCurrent data = 32;
+}

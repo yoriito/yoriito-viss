@@ -1,0 +1,83 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// Copyright 2026 JASPAR
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package yoriito.viss.v1;
+
+// ErrorCode represents the error codes used in VISS
+enum ErrorCode {
+  // Unspecified error code
+  ERROR_UNSPECIFIED = 0;
+  // error when the request is invalid or malformed
+  ERROR_BAD_REQUEST = 400;
+  // error when the request is unauthorized
+  ERROR_UNAUTHORIZED = 401;
+  // error when the request is forbidden
+  ERROR_FORBIDDEN = 403;
+  // error when the requested node is not found
+  ERROR_NOT_FOUND = 404;
+  // error when the request is not acceptable
+  ERROR_REQUEST_TIMEOUT = 408;
+  // error when the server is overloaded or too many requests are made
+  ERROR_TOO_MANY_REQUESTS = 429;
+  // error when the server encountered an internal error
+  ERROR_INTERNAL_SERVER_ERROR = 500;
+  // error when the server received an invalid response from an upstream server
+  ERROR_BAD_GATEWAY = 502;
+  // error when the server is currently unavailable
+  ERROR_SERVICE_UNAVAILABLE = 503;
+  // error when the server did not receive a timely response from an upstream server
+  ERROR_GATEWAY_TIMEOUT = 504;
+}
+
+// ErrorReason represents the reasons for errors in VISS
+enum ErrorReason {
+  // Unspecified reason for the error
+  REASON_UNSPECIFIED = 0;
+  // Bad request, typically due to malformed request syntax
+  REASON_BAD_REQUEST = 1;
+  // Invalid data provided in the request
+  REASON_INVALID_DATA = 2;
+  // Invalid token, such as an expired or malformed request id
+  REASON_INVALID_TOKEN = 3;
+  // Forbidden request, such as when the user does not have permission to access the resource
+  REASON_FORBIDDEN_REQUEST = 4;
+  // Unavailable data, such as when the requested data is not available or cannot be retrieved
+  REASON_UNAVAILABLE_DATA = 5;
+  // Request timeout, such as when the server did not receive a response in time
+  REASON_REQUEST_TIMEOUT = 6;
+  // Too many requests, such as when the server is overloaded or too many requests are made in a short period
+  REASON_TOO_MANY_REQUESTS = 7;
+  // Internal server error, such as when the server encountered an unexpected condition
+  REASON_INTERNAL_SERVER_ERROR = 8;
+  // Bad gateway, such as when the server encountered an error while communicating with an upstream server
+  REASON_BAD_GATEWAY = 9;
+  // Service unavailable, such as when the server is currently unavailable or undergoing maintenance
+  REASON_SERVICE_UNAVAILABLE = 10;
+  // Gateway timeout, such as when the server did not receive a timely response from an upstream server
+  REASON_GATEWAY_TIMEOUT = 11;
+}
+
+// Error represents an error response in VISS
+message Error {
+  // ErrorCode represents the error code
+  ErrorCode number = 1;
+  // ErrorReason represents the reason for the error
+  ErrorReason reason = 2;
+  // Description provides a human-readable description of the error
+  optional string description = 3;
+}

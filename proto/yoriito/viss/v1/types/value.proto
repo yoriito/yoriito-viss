@@ -1,0 +1,356 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// Copyright 2026 JASPAR
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+package yoriito.viss.v1;
+
+import "google/protobuf/struct.proto";
+
+/******************************************************************************
+ * Basic Data Types
+ *****************************************************************************/
+
+// NodeType represents the type of a node in the VISS
+enum NodeType {
+  // Unspecified node type
+  NODE_UNKNOWN = 0;
+  // branch node, which can have child nodes
+  NODE_BRANCH = 1;
+  // leaf node, which is a static data node
+  NODE_ATTRIBUTE = 2;
+  // leaf node, which is a sensor data node
+  NODE_SENSOR = 3;
+  // leaf node, which is an actuator data node
+  NODE_ACTUATOR = 4;
+}
+
+// DataType represents the type of data in the VISS
+enum DataType {
+  // Unspecified data type
+  DATATYPE_NONE = 0;
+  // string
+  DATATYPE_STRING = 1;
+  // boolean
+  DATATYPE_BOOL = 2;
+  // integer 8-bit
+  DATATYPE_INT8 = 3;
+  // integer 16-bit
+  DATATYPE_INT16 = 4;
+  // integer 32-bit
+  DATATYPE_INT32 = 5;
+  // integer 64-bit
+  DATATYPE_INT64 = 6;
+  // unsigned integer 8-bit
+  DATATYPE_UINT8 = 7;
+  // unsigned integer 16-bit
+  DATATYPE_UINT16 = 8;
+  // unsigned integer 32-bit
+  DATATYPE_UINT32 = 9;
+  // unsigned integer 64-bit
+  DATATYPE_UINT64 = 10;
+  // floating point number 32-bit
+  DATATYPE_FLOAT = 11;
+  // floating point number 64-bit
+  DATATYPE_DOUBLE = 12;
+  // array of strings
+  DATATYPE_ARRAY_STRING = 13;
+  // array of booleans
+  DATATYPE_ARRAY_BOOL = 14;
+  // array of integers 8-bit
+  DATATYPE_ARRAY_INT8 = 15;
+  // array of integers 16-bit
+  DATATYPE_ARRAY_INT16 = 16;
+  // array of integers 32-bit
+  DATATYPE_ARRAY_INT32 = 17;
+  // array of integers 64-bit
+  DATATYPE_ARRAY_INT64 = 18;
+  // array of unsigned integers 8-bit
+  DATATYPE_ARRAY_UINT8 = 19;
+  // array of unsigned integers 16-bit
+  DATATYPE_ARRAY_UINT16 = 20;
+  // array of unsigned integers 32-bit
+  DATATYPE_ARRAY_UINT32 = 21;
+  // array of unsigned integers 64-bit
+  DATATYPE_ARRAY_UINT64 = 22;
+  // array of floating point numbers 32-bit
+  DATATYPE_ARRAY_FLOAT = 23;
+  // array of floating point numbers 64-bit
+  DATATYPE_ARRAY_DOUBLE = 24;
+  // VSS struct (used for complex data types)
+  DATATYPE_STRUCT = 25;
+}
+
+// ValueType represents the value type in the VISS
+message ValueType {
+  // one of the following value types
+  oneof value_type {
+    // string value
+    string string = 11;
+    // boolean value
+    bool bool = 12;
+    // signed integer 8-bit
+    sint32 int8 = 13;
+    // signed integer 16-bit
+    sint32 int16 = 14;
+    // signed integer 32-bit
+    sint32 int32 = 15;
+    // signed integer 64-bit
+    sint64 int64 = 16;
+    // unsigned integer 8-bit
+    uint32 uint8 = 17;
+    // unsigned integer 16-bit
+    uint32 uint16 = 18;
+    // unsigned integer 32-bit
+    uint32 uint32 = 19;
+    // unsigned integer 64-bit
+    uint64 uint64 = 20;
+    // floating point number 32-bit
+    float float = 21;
+    // floating point number 64-bit
+    double double = 22;
+    // array of strings
+    StringArray string_array = 23;
+    // array of booleans
+    BoolArray bool_array = 24;
+    // array of signed integers 8-bit
+    Int8Array int8_array = 25;
+    // array of signed integers 16-bit
+    Int16Array int16_array = 26;
+    // array of signed integers 32-bit
+    Int32Array int32_array = 27;
+    // array of signed integers 64-bit
+    Int64Array int64_array = 28;
+    // array of unsigned integers 8-bit
+    Uint8Array uint8_array = 29;
+    // array of unsigned integers 16-bit
+    Uint16Array uint16_array = 30;
+    // array of unsigned integers 32-bit
+    Uint32Array uint32_array = 31;
+    // array of unsigned integers 64-bit
+    Uint64Array uint64_array = 32;
+    // array of floating point numbers 32-bit
+    FloatArray float_array = 33;
+    // array of floating point numbers 64-bit
+    DoubleArray double_array = 34;
+    // VSS struct (used for complex data types)
+    ValueObject value_object = 35;
+  }
+}
+
+// StringArray represents an array of strings in the VISS
+message StringArray {
+  // repeated field of strings
+  repeated string values = 1;
+}
+
+// BoolArray represents an array of booleans in the VISS
+message BoolArray {
+  // repeated field of booleans
+  repeated bool values = 1;
+}
+
+// Int8Array represents an array of signed integers 8-bit in the VISS
+message Int8Array {
+  // repeated field of signed integers 8-bit
+  repeated sint32 values = 1;
+}
+
+// Int16Array represents an array of signed integers 16-bit in the VISS
+message Int16Array {
+  // repeated field of signed integers 16-bit
+  repeated sint32 values = 1;
+}
+
+// Int32Array represents an array of signed integers 32-bit in the VISS
+message Int32Array {
+  // repeated field of signed integers 32-bit
+  repeated sint32 values = 1;
+}
+
+// Int64Array represents an array of signed integers 64-bit in the VISS
+message Int64Array {
+  // repeated field of signed integers 64-bit
+  repeated sint64 values = 1;
+}
+
+// Uint8Array represents an array of unsigned integers 8-bit in the VISS
+message Uint8Array {
+  // repeated field of unsigned integers 8-bit
+  repeated uint32 values = 1;
+}
+
+// Uint16Array represents an array of unsigned integers 16-bit in the VISS
+message Uint16Array {
+  // repeated field of unsigned integers 16-bit
+  repeated uint32 values = 1;
+}
+
+// Uint32Array represents an array of unsigned integers 32-bit in the VISS
+message Uint32Array {
+  // repeated field of unsigned integers 32-bit
+  repeated uint32 values = 1;
+}
+
+// Uint64Array represents an array of unsigned integers 64-bit in the VISS
+message Uint64Array {
+  // repeated field of unsigned integers 64-bit
+  repeated uint64 values = 1;
+}
+
+// FloatArray represents an array of floating point numbers 32-bit in the VISS
+message FloatArray {
+  // repeated field of floating point numbers 32-bit
+  repeated float values = 1;
+}
+
+// DoubleArray represents an array of floating point numbers 64-bit in the VISS
+message DoubleArray {
+  // repeated field of floating point numbers 64-bit
+  repeated double values = 1;
+}
+
+// ValueObject represents Struct(a complex data type in the VISS)
+message ValueObject {
+  // properties is a repeated field of ValueProperty
+  repeated ValueProperty properties = 1;
+}
+
+// ValueProperty is a key-value store
+message ValueProperty {
+  // key is the name of the property
+  string key = 1;
+  // value is the value of the property
+  ValueType value = 2;
+}
+
+/******************************************************************************
+ * Data for Message Payload
+ *****************************************************************************/
+
+// DataPointCurrent represents a single data point for Current
+message DataPointCurrent {
+  // Timestamp when a VISS Server receive this data
+  int64 storedTimestamp = 1;
+  // value of tha VSS data
+  ValueType value = 2;
+  // Timestamp when data are produced in a vehicle platform(sensor, actuator, ECU etc...)
+  optional int64 producedTimestamp = 3;
+  // availablity as sensor
+  optional bool is_available_sensor = 4;
+  // availablity as actuator
+  optional bool is_available_actuator = 5;
+}
+
+// DataPackageCurrent is a set of VSS path and DataPoint for Current
+message DataPackageCurrent {
+  // the VSS path
+  string path = 1;
+  // repeated field of DataPointCurrent
+  repeated DataPointCurrent dp = 2;
+}
+
+// DataPackagesCurrent is a array of DataPackageCurrent
+message DataPackagesCurrent {
+  // repeated field of DataPackageCurrent
+  repeated DataPackageCurrent data = 1;
+}
+
+// DataPointTarget represents a single data point for Target
+message DataPointTarget {
+  // value of the VSS data
+  ValueType value = 1;
+}
+
+// DataPackageTarget is a set of VSS path and DataPoint for Target
+message DataPackageTarget {
+  // the VSS path
+  string path = 1;
+  // repeated field of DataPointTarget
+  repeated DataPointTarget dp = 2;
+}
+
+// DataPackagesTarget is an array of DataPackageTarget
+message DataPackagesTarget {
+  // repeated field of DataPackageTarget
+  repeated DataPackageTarget data = 1;
+}
+
+/******************************************************************************
+ * MetaData for Message Payload
+ *****************************************************************************/
+
+// MetadataEntry represents a single metadata entry for a VSS node
+// See https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/sensor_actuator/index.html#mandatory-data-entry-attributes
+//
+// We changed the original definition of COVESA VSS like the following.
+//
+// - `pattern`
+//   - In the original definition, pattern can accept string or string[].
+//   - To simplify the definition, we use StringArray only for a single string pattern.
+// - `max` and `min`
+//   - In the original definition, max/min can accept other types like float, double, etc.
+//   - Reference:
+//     - [COVESA VSS Datatypes](https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/data_types/index.html#supported-datatypes)
+//     - [COVESA VSS Sensors, Actuators and Attributes](https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/sensor_actuator/index.html#optional-data-entry-attributes)
+//   - But, to simplify the definition, we use int32 only.
+//   - This means that the maximum/minimum value is expected to be an integer.
+//   - We choose int32 because:
+//     - int32 is practically sufficient to represent the maximum/minimum values for most VSS data.
+//     - it is a fixed-size integer type, which makes it easier to work with in terms of memory and performance.
+// - `allowed`
+//   - In the original definition, allowed can accept other types like string, int32, etc.
+//   - Reference:
+//     - [COVESA VSS Value Restrictions](https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/allowed/index.html)
+//   - But, to simplify the definition, we use StringArray only.
+//   - It's because the allowed values are represented as enum, now.
+//   - And, allowing other types makes the definition more comprecated.
+//   - If you want to support other types, you can cast the allowed strings to other types.
+message MetadataEntry {
+  // the VSS path
+  string path = 1;
+  // the node type of VSS leaf
+  NodeType type = 2;
+  // the data type of the VSS data
+  DataType datatype = 3;
+  // the flag to indicate if the node is deprecated
+  optional string deprecated = 4;
+  // the unit of the VSS data, e.g. "km/h", "Celsius", "m/s^2"
+  optional string unit = 5;
+  // allowed pattern.
+  optional StringArray pattern = 6;
+  // the maximum value of the VSS data.
+  optional int32 max = 7;
+  // the minimum value of the VSS data.
+  optional int32 min = 8;
+  // a human-readable description of the VSS node
+  string description = 9;
+  // optional comment for the VSS node
+  optional string comment = 10;
+  // allowed values for the VSS data
+  optional StringArray allowed = 11;
+  // the size of the array
+  optional uint64 arraysize = 12;
+  // default value of the VSS data
+  optional ValueType default = 13;
+  // custom metadata for the VSS node
+  optional google.protobuf.Struct custom_metadata = 30;
+}
+
+// MetadataEntries represents a array of MetadataEntry
+message MetadataEntries {
+  // repeated field of MetadataEntry
+  repeated MetadataEntry entries = 1;
+}

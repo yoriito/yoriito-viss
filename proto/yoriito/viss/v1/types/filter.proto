@@ -1,0 +1,192 @@
+// SPDX-License-Identifier: Apache-2.0
+//
+// Copyright 2026 JASPAR
+//
+// Licensed under the Apache License, Version 2.0 (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+//     http://www.apache.org/licenses/LICENSE-2.0
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+
+syntax = "proto3";
+
+package yoriito.viss.v1;
+
+/**
+ * In the original VISSv3 JSON schema, filter is constructed from 2 types of values.
+ * - variant: filter type
+ * - parameter: parameter per filter types
+ *
+ * But, in gRPC, variant is not required because gRPC can express a data structure itself.
+ * So, we remove `variant` attribute from this schema.
+ */
+
+// GetFilter represents a filter for the Get action
+message GetFilter {
+  // The filter can be one of the following types:
+  oneof parameter_variant {
+    // PathsFilter is used to retrieve multiple nodes
+    PathsFilter paths_parameter = 1;
+    // HistoryFilter is used to retrieve historical data (Currently Not Supported)
+    HistoryFilter history_parameter = 2;
+  }
+}
+
+// InspectFilter represents a filter for the Inspect action
+message InspectFilter {
+  // The filter can be one of the following types:
+  oneof parameter_variant {
+    // PathsFilter is used to retrieve multiple nodes
+    PathsFilter paths_parameter = 1;
+  }
+}
+
+// DefineFilter represents a filter for the Define action
+message DefineFilter {
+  // The filter can be one of the following types:
+  oneof parameter_variant {
+    // PathsFilter is used to retrieve multiple nodes
+    PathsFilter paths_parameter = 1;
+  }
+}
+
+// MiscFilter represents a miscellaneous filter
+message MiscFilter {
+  // The filter can be one of the following types:
+  oneof parameter_variant {
+    // TimebasedFilter is used to retrieve data per time period
+    TimebasedFilter timebased_parameter = 1;
+    // ChangeFilter is used to retrieve data when data changes
+    ChangeFilter change_parameter = 2;
+    // RangeFilter is used to retrieve data within a range
+    RangeFilter range_parameter = 3;
+    // CurvelogFilter is used to retrieve data with a curve log (Currently Not Supported)
+    CurvelogFilter curvelog_parameter = 4;
+  }
+}
+
+// ComboFilter represents a combination of PathsFilter and MiscFilter
+message ComboFilter {
+  // PathsFilter is used to retrieve multiple nodes
+  PathsFilter paths_parameter = 1;
+  // MiscFilter is used to apply additional parameters to PathsFilter
+  MiscFilter misc_parameter = 2;
+}
+
+// SubscribeFilter represents a filter for the Subscribe action
+message SubscribeFilter {
+  // The filter can be one of the following types:
+  oneof parameter_variant {
+    // PathsFilter is used to retrieve multiple nodes
+    PathsFilter paths_parameter = 1;
+    // MiscFilter is a miscellaneous filter
+    MiscFilter misc_parameter = 2;
+    // ComboFilter is a combination of PathsFilter and MiscFilter
+    ComboFilter combo_filter = 3;
+  }
+}
+    
+// PathsFilter is used to retrieve multiple nodes
+message PathsFilter {
+  // path are VSS node paths
+  repeated string paths = 1;
+}
+
+// HistoryFilter is used to retrieve historical data
+message HistoryFilter {
+  // The period must conform to the ISO8601 duration format,
+  // expressed with days, hour, minute, and second data
+  // i.e. "PdddMThhHmmMssS"
+  string timePeriod = 1;
+}
+
+// TimebasedFilter is used to retrieve data per time period
+message TimebasedFilter {
+  // period is an integer and represents the period time in milliseconds
+  uint32 period = 1;
+}
+
+// RangeFilter is used to retrieve data within a range
+message RangeFilter {
+  // range_type can be either a single RangeCondition or multiple RangeConditionArray
+  oneof range_type {
+    // single is a single RangeCondition
+    RangeCondition single = 1;
+    // multiple is a RangeConditionArray containing multiple RangeConditionWithOp
+    RangeConditionArray multiple = 2;
+  }
+}
+
+// Operator defines the operators used in range conditions
+enum Operator {
+  // OPERATOR_UNDEFINED is used when the operator is not defined
+  OPERATOR_UNDEFINED = 0;
+  // equal
+  OPERATOR_EQ = 1;
+  // not equal
+  OPERATOR_NE = 2;
+  // greater than
+  OPERATOR_GT = 3;
+  // greater than or equal
+  OPERATOR_GTE = 4;
+  // less than
+  OPERATOR_LT = 5;
+  // less than or equal
+  OPERATOR_LTE = 6;
+}
+
+// Condition defines the logical conditions used in range conditions
+enum Condition {
+  // CONDITION_UNDEFINED is used when the condition is not defined
+  CONDITION_UNDEFINED = 0;
+  // AND condition
+  CONDITION_AND = 1;
+  // OR condition
+  CONDITION_OR = 2;
+}
+
+// RangeCondition defines a single range condition with an operator and a boundary
+message RangeCondition {
+  // boundary_op defines the operator for the boundary condition
+  Operator boundary_op = 1;
+  // boundary defines the boundary value for the condition
+  sint32 boundary = 2;
+}
+
+// RangeConditionArray defines an array of range conditions with operators
+message RangeConditionArray {
+  // conditions is a repeated field of RangeConditionWithOp
+  repeated RangeConditionWithOp conditions = 1;
+}
+
+// RangeConditionWithOp defines a range condition with an operator and a boundary,
+message RangeConditionWithOp {
+  // boundary_op defines the operator for the boundary condition
+  Operator boundary_op = 1;
+  // boundary defines the boundary value for the condition
+  sint32 boundary = 2;
+  // combination_op defines the logical condition for combining multiple conditions (default: AND)
+  optional Condition combination_op = 3;
+}
+
+// ChangeFilter can be applied to number or boolean datatype
+message ChangeFilter {
+  // logic_op defines the logical operator for the change filter
+  Operator logic_op = 1;
+  // // diff defines the difference value for the change filter
+  sint32 diff = 2;
+}
+
+// CurvelogFilter is used to retrieve data with a curve log
+message CurvelogFilter {
+  // maxerr is a float value setting the max allowed error between any data sample and the simplified curve.
+  float maxerr = 1;
+  // bufsize is the number of buffer elements.
+  uint32 bufsize = 2;
+}

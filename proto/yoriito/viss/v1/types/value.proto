@@ -23,7 +23,9 @@ import "google/protobuf/struct.proto";
  * Basic Data Types
  *****************************************************************************/
 
-// NodeType represents the type of a node in the VISS
+// NodeType represents the type of a node in the VISS.
+// Struct and property nodes are not represented here because their roles
+// are expressed by separate message types (StructMetadataEntry, PropertyMetadataEntry).
 enum NodeType {
   // Unspecified node type
   NODE_UNKNOWN = 0;
@@ -91,6 +93,8 @@ enum DataType {
   DATATYPE_ARRAY_DOUBLE = 24;
   // VSS struct (used for complex data types)
   DATATYPE_STRUCT = 25;
+  // array of VSS structs (used for complex data type arrays)
+  DATATYPE_STRUCT_ARRAY = 26;
 }
 
 // ValueType represents the value type in the VISS
@@ -147,6 +151,8 @@ message ValueType {
     DoubleArray double_array = 34;
     // VSS struct (used for complex data types)
     ValueObject value_object = 35;
+    // array of VSS structs (used for complex data type arrays)
+    ValueObjectArray value_object_array = 36;
   }
 }
 
@@ -228,6 +234,12 @@ message ValueObject {
   repeated ValueProperty properties = 1;
 }
 
+// ValueObjectArray represents an array of Struct(a complex data type in the VISS)
+message ValueObjectArray {
+  // repeated field of ValueObject
+  repeated ValueObject values = 1;
+}
+
 // ValueProperty is a key-value store
 message ValueProperty {
   // key is the name of the property
@@ -300,16 +312,6 @@ message DataPackagesTarget {
 // - `pattern`
 //   - In the original definition, pattern can accept string or string[].
 //   - To simplify the definition, we use StringArray only for a single string pattern.
-// - `max` and `min`
-//   - In the original definition, max/min can accept other types like float, double, etc.
-//   - Reference:
-//     - [COVESA VSS Datatypes](https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/data_types/index.html#supported-datatypes)
-//     - [COVESA VSS Sensors, Actuators and Attributes](https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/sensor_actuator/index.html#optional-data-entry-attributes)
-//   - But, to simplify the definition, we use int32 only.
-//   - This means that the maximum/minimum value is expected to be an integer.
-//   - We choose int32 because:
-//     - int32 is practically sufficient to represent the maximum/minimum values for most VSS data.
-//     - it is a fixed-size integer type, which makes it easier to work with in terms of memory and performance.
 // - `allowed`
 //   - In the original definition, allowed can accept other types like string, int32, etc.
 //   - Reference:
@@ -332,9 +334,9 @@ message MetadataEntry {
   // allowed pattern.
   optional StringArray pattern = 6;
   // the maximum value of the VSS data.
-  optional int32 max = 7;
+  optional ValueType max = 7;
   // the minimum value of the VSS data.
-  optional int32 min = 8;
+  optional ValueType min = 8;
   // a human-readable description of the VSS node
   string description = 9;
   // optional comment for the VSS node
@@ -345,12 +347,76 @@ message MetadataEntry {
   optional uint64 arraysize = 12;
   // default value of the VSS data
   optional ValueType default = 13;
+  // the data type path is datatype is STRUCT
+  optional string datatype_path = 14;
   // custom metadata for the VSS node
   optional google.protobuf.Struct custom_metadata = 30;
 }
 
-// MetadataEntries represents a array of MetadataEntry
+
+// PropertyMetadataEntry represents a single metadata entry for a primitive property of a VSS struct.
+// Properties cannot be individually accessed via Get/Set/Subscribe.
+message PropertyMetadataEntry {
+  // the property name within the parent struct (not a VSS path).
+  // e.g. "temperature", "unit"
+  string name = 1;
+  // the data type of this property's value
+  DataType datatype = 2;
+  // the flag to indicate if the property is deprecated
+  optional string deprecated = 3;
+  // the unit of the property value, e.g. "km/h", "Celsius", "m/s^2"
+  optional string unit = 4;
+  // allowed pattern.
+  optional StringArray pattern = 5;
+  // the maximum value.
+  optional ValueType max = 6;
+  // the minimum value.
+  optional ValueType min = 7;
+  // a human-readable description
+  string description = 8;
+  // optional comment
+  optional string comment = 9;
+  // allowed values
+  optional StringArray allowed = 10;
+  // the size of the array
+  optional uint64 arraysize = 11;
+  // default value
+  optional ValueType default = 12;
+  // the data type path is datatype is STRUCT
+  optional string datatype_path = 13;
+  // custom metadata for the VSS node
+  optional google.protobuf.Struct custom_metadata = 30;
+
+}
+
+
+// StructMetadataEntry represents a top-level struct node in the VSS tree.
+// This node is independently accessible via Get/Set/Subscribe.
+// Its value is composed from its members as a ValueObject.
+// Struct has no data type of its own - it is a node type, not a data type.
+message StructMetadataEntry {
+  // the VSS path (dot-separated absolute path in the VSS tree).
+  // e.g. "Vehicle.Cabin.HVAC.Station"
+  // This identifies the node's position in the tree and serves as the access target.
+  string path = 1;
+  // the flag to indicate if the struct is deprecated
+  optional string deprecated = 2;
+  // a human-readable description of the struct node
+  string description = 3;
+  // optional comment
+  optional string comment = 4;
+  // members of this struct
+  repeated PropertyMetadataEntry properties = 5;
+  // custom metadata for the VSS node
+  optional google.protobuf.Struct custom_metadata = 30;
+
+}
+
+// MetadataEntries represents a set of metadata for VSS nodes.
+// It can contain both normal node metadata and struct node metadata.
 message MetadataEntries {
-  // repeated field of MetadataEntry
-  repeated MetadataEntry entries = 1;
+  // metadata for normal VSS nodes
+  repeated MetadataEntry metadata_entries = 1;
+  // metadata for VSS struct nodes
+  repeated StructMetadataEntry struct_metadata_entries = 2;
 }

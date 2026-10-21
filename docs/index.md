@@ -79,12 +79,15 @@
     - [Int8Array](#yoriito-viss-v1-Int8Array)
     - [MetadataEntries](#yoriito-viss-v1-MetadataEntries)
     - [MetadataEntry](#yoriito-viss-v1-MetadataEntry)
+    - [PropertyMetadataEntry](#yoriito-viss-v1-PropertyMetadataEntry)
     - [StringArray](#yoriito-viss-v1-StringArray)
+    - [StructMetadataEntry](#yoriito-viss-v1-StructMetadataEntry)
     - [Uint16Array](#yoriito-viss-v1-Uint16Array)
     - [Uint32Array](#yoriito-viss-v1-Uint32Array)
     - [Uint64Array](#yoriito-viss-v1-Uint64Array)
     - [Uint8Array](#yoriito-viss-v1-Uint8Array)
     - [ValueObject](#yoriito-viss-v1-ValueObject)
+    - [ValueObjectArray](#yoriito-viss-v1-ValueObjectArray)
     - [ValueProperty](#yoriito-viss-v1-ValueProperty)
     - [ValueType](#yoriito-viss-v1-ValueType)
   
@@ -1133,12 +1136,14 @@ Int8Array represents an array of signed integers 8-bit in the VISS
 <a name="yoriito-viss-v1-MetadataEntries"></a>
 
 ### MetadataEntries
-MetadataEntries represents a array of MetadataEntry
+MetadataEntries represents a set of metadata for VSS nodes.
+It can contain both normal node metadata and struct node metadata.
 
 
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
-| entries | [MetadataEntry](#yoriito-viss-v1-MetadataEntry) | repeated | repeated field of MetadataEntry |
+| metadata_entries | [MetadataEntry](#yoriito-viss-v1-MetadataEntry) | repeated | metadata for normal VSS nodes |
+| struct_metadata_entries | [StructMetadataEntry](#yoriito-viss-v1-StructMetadataEntry) | repeated | metadata for VSS struct nodes |
 
 
 
@@ -1156,16 +1161,6 @@ We changed the original definition of COVESA VSS like the following.
 - `pattern`
   - In the original definition, pattern can accept string or string[].
   - To simplify the definition, we use StringArray only for a single string pattern.
-- `max` and `min`
-  - In the original definition, max/min can accept other types like float, double, etc.
-  - Reference:
-    - [COVESA VSS Datatypes](https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/data_types/index.html#supported-datatypes)
-    - [COVESA VSS Sensors, Actuators and Attributes](https://covesa.github.io/vehicle_signal_specification/rule_set/data_entry/sensor_actuator/index.html#optional-data-entry-attributes)
-  - But, to simplify the definition, we use int32 only.
-  - This means that the maximum/minimum value is expected to be an integer.
-  - We choose int32 because:
-    - int32 is practically sufficient to represent the maximum/minimum values for most VSS data.
-    - it is a fixed-size integer type, which makes it easier to work with in terms of memory and performance.
 - `allowed`
   - In the original definition, allowed can accept other types like string, int32, etc.
   - Reference:
@@ -1184,13 +1179,43 @@ We changed the original definition of COVESA VSS like the following.
 | deprecated | [string](#string) | optional | the flag to indicate if the node is deprecated |
 | unit | [string](#string) | optional | the unit of the VSS data, e.g. &#34;km/h&#34;, &#34;Celsius&#34;, &#34;m/s^2&#34; |
 | pattern | [StringArray](#yoriito-viss-v1-StringArray) | optional | allowed pattern. |
-| max | [int32](#int32) | optional | the maximum value of the VSS data. |
-| min | [int32](#int32) | optional | the minimum value of the VSS data. |
+| max | [ValueType](#yoriito-viss-v1-ValueType) | optional | the maximum value of the VSS data. |
+| min | [ValueType](#yoriito-viss-v1-ValueType) | optional | the minimum value of the VSS data. |
 | description | [string](#string) |  | a human-readable description of the VSS node |
 | comment | [string](#string) | optional | optional comment for the VSS node |
 | allowed | [StringArray](#yoriito-viss-v1-StringArray) | optional | allowed values for the VSS data |
 | arraysize | [uint64](#uint64) | optional | the size of the array |
 | default | [ValueType](#yoriito-viss-v1-ValueType) | optional | default value of the VSS data |
+| datatype_path | [string](#string) | optional | the data type path is datatype is STRUCT |
+| custom_metadata | [google.protobuf.Struct](#google-protobuf-Struct) | optional | custom metadata for the VSS node |
+
+
+
+
+
+
+<a name="yoriito-viss-v1-PropertyMetadataEntry"></a>
+
+### PropertyMetadataEntry
+PropertyMetadataEntry represents a single metadata entry for a primitive property of a VSS struct.
+Properties cannot be individually accessed via Get/Set/Subscribe.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| name | [string](#string) |  | the property name within the parent struct (not a VSS path). e.g. &#34;temperature&#34;, &#34;unit&#34; |
+| datatype | [DataType](#yoriito-viss-v1-DataType) |  | the data type of this property&#39;s value |
+| deprecated | [string](#string) | optional | the flag to indicate if the property is deprecated |
+| unit | [string](#string) | optional | the unit of the property value, e.g. &#34;km/h&#34;, &#34;Celsius&#34;, &#34;m/s^2&#34; |
+| pattern | [StringArray](#yoriito-viss-v1-StringArray) | optional | allowed pattern. |
+| max | [ValueType](#yoriito-viss-v1-ValueType) | optional | the maximum value. |
+| min | [ValueType](#yoriito-viss-v1-ValueType) | optional | the minimum value. |
+| description | [string](#string) |  | a human-readable description |
+| comment | [string](#string) | optional | optional comment |
+| allowed | [StringArray](#yoriito-viss-v1-StringArray) | optional | allowed values |
+| arraysize | [uint64](#uint64) | optional | the size of the array |
+| default | [ValueType](#yoriito-viss-v1-ValueType) | optional | default value |
+| datatype_path | [string](#string) | optional | the data type path is datatype is STRUCT |
 | custom_metadata | [google.protobuf.Struct](#google-protobuf-Struct) | optional | custom metadata for the VSS node |
 
 
@@ -1207,6 +1232,29 @@ StringArray represents an array of strings in the VISS
 | Field | Type | Label | Description |
 | ----- | ---- | ----- | ----------- |
 | values | [string](#string) | repeated | repeated field of strings |
+
+
+
+
+
+
+<a name="yoriito-viss-v1-StructMetadataEntry"></a>
+
+### StructMetadataEntry
+StructMetadataEntry represents a top-level struct node in the VSS tree.
+This node is independently accessible via Get/Set/Subscribe.
+Its value is composed from its members as a ValueObject.
+Struct has no data type of its own - it is a node type, not a data type.
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| path | [string](#string) |  | the VSS path (dot-separated absolute path in the VSS tree). e.g. &#34;Vehicle.Cabin.HVAC.Station&#34; This identifies the node&#39;s position in the tree and serves as the access target. |
+| deprecated | [string](#string) | optional | the flag to indicate if the struct is deprecated |
+| description | [string](#string) |  | a human-readable description of the struct node |
+| comment | [string](#string) | optional | optional comment |
+| properties | [PropertyMetadataEntry](#yoriito-viss-v1-PropertyMetadataEntry) | repeated | members of this struct |
+| custom_metadata | [google.protobuf.Struct](#google-protobuf-Struct) | optional | custom metadata for the VSS node |
 
 
 
@@ -1288,6 +1336,21 @@ ValueObject represents Struct(a complex data type in the VISS)
 
 
 
+<a name="yoriito-viss-v1-ValueObjectArray"></a>
+
+### ValueObjectArray
+ValueObjectArray represents an array of Struct(a complex data type in the VISS)
+
+
+| Field | Type | Label | Description |
+| ----- | ---- | ----- | ----------- |
+| values | [ValueObject](#yoriito-viss-v1-ValueObject) | repeated | repeated field of ValueObject |
+
+
+
+
+
+
 <a name="yoriito-viss-v1-ValueProperty"></a>
 
 ### ValueProperty
@@ -1337,6 +1400,7 @@ ValueType represents the value type in the VISS
 | float_array | [FloatArray](#yoriito-viss-v1-FloatArray) |  | array of floating point numbers 32-bit |
 | double_array | [DoubleArray](#yoriito-viss-v1-DoubleArray) |  | array of floating point numbers 64-bit |
 | value_object | [ValueObject](#yoriito-viss-v1-ValueObject) |  | VSS struct (used for complex data types) |
+| value_object_array | [ValueObjectArray](#yoriito-viss-v1-ValueObjectArray) |  | array of VSS structs (used for complex data type arrays) |
 
 
 
@@ -1378,13 +1442,16 @@ DataType represents the type of data in the VISS
 | DATATYPE_ARRAY_FLOAT | 23 | array of floating point numbers 32-bit |
 | DATATYPE_ARRAY_DOUBLE | 24 | array of floating point numbers 64-bit |
 | DATATYPE_STRUCT | 25 | VSS struct (used for complex data types) |
+| DATATYPE_STRUCT_ARRAY | 26 | array of VSS structs (used for complex data type arrays) |
 
 
 
 <a name="yoriito-viss-v1-NodeType"></a>
 
 ### NodeType
-NodeType represents the type of a node in the VISS
+NodeType represents the type of a node in the VISS.
+Struct and property nodes are not represented here because their roles
+are expressed by separate message types (StructMetadataEntry, PropertyMetadataEntry).
 
 | Name | Number | Description |
 | ---- | ------ | ----------- |

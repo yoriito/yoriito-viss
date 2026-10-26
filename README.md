@@ -1,35 +1,51 @@
 # Yoriito VISS
 
 This repository stores the VISS definition of Yoriito, which is derived from COVESA VISSv3.
-Currently, Yoriito VISS is defined by JSON Schema, but, in future, gRPC(*.proto) might be used.
 
 ## Getting Started
 
 - Generate C++ header
 
 ```
-./generate_cc.sh
-ls out/viss_schema_v3.h
-```
+./generate_grpc_pb.sh
+tree out/
+out/
+└── yoriito
+    └── viss
+        └── v1
+            ├── common.grpc.pb.cc
+            ├── common.grpc.pb.h
+            ├── common.pb.cc
+            ├── common.pb.h
+            ├── consumer.grpc.pb.cc
+            ├── consumer.grpc.pb.h
+            ├── consumer.pb.cc
+            ├── consumer.pb.h
+            ├── producer.grpc.pb.cc
+            ├── producer.grpc.pb.h
+            ├── producer.pb.cc
+            ├── producer.pb.h
+            └── types
+                ├── error.grpc.pb.cc
+                ├── error.grpc.pb.h
+                ├── error.pb.cc
+                ├── error.pb.h
+                ├── filter.grpc.pb.cc
+                ├── filter.grpc.pb.h
+                ├── filter.pb.cc
+                ├── filter.pb.h
+                ├── value.grpc.pb.cc
+                ├── value.grpc.pb.h
+                ├── value.pb.cc
+                └── value.pb.h
 
-- Build & Test
-
+5 directories, 24 file
 ```
-mkdir build && cd build
-cmake ../
-make -j
-ctest
-```
-
-**WARINING**
-- if you run `make clean`, inc/viss_schema_v3.h will be removed.
-- So, don't commit after running `make clean`. Please run `make` or `generate_cc.sh` before commit.
 
 
 ## Schema
 
-### JSON
+### gRPC
 
-This JSON Schema is based on https://github.com/COVESA/vissr/blob/master/server/vissv2server/vissv3.0-schema.json.
-But, the original definition is not easy to process with `quicktype`.
-So, we modify the original JSON schema.
+This proto files are based on https://github.com/COVESA/vehicle-information-service-specification/blob/v3.0/spec/resources/vissv3.0.proto.txt
+
